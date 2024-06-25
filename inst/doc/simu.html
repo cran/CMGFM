@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Wei Liu" />
+
+<meta name="date" content="2024-06-25" />
+
+<title>CMGFM: simulation</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">CMGFM: simulation</h1>
+<h4 class="author">Wei Liu</h4>
+<h4 class="date">2024-06-25</h4>
+
+
+
+<p>This vignette introduces the usage of CMGFM for the analysis of
+high-dimensional multimodality data with additional covariates, by
+comparison with other methods.</p>
+<p>The package can be loaded with the command:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(CMGFM)</span></code></pre></div>
+<div id="generate-the-simulated-data" class="section level2">
+<h2>Generate the simulated data</h2>
+<p>First, we generate the data simulated data.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>pveclist <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">&#39;gaussian&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">150</span>),<span class="st">&#39;poisson&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">50</span>, <span class="dv">150</span>),</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                 <span class="st">&#39;binomial&#39;</span><span class="ot">=</span><span class="fu">c</span>(<span class="dv">100</span>,<span class="dv">60</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>q <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>sigmavec <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>,<span class="dv">3</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>pvec <span class="ot">&lt;-</span> <span class="fu">unlist</span>(pveclist)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>methodNames <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;CMGFM&quot;</span>, <span class="st">&quot;GFM&quot;</span>, <span class="st">&quot;MRRR&quot;</span>, <span class="st">&quot;LFR&quot;</span> , <span class="st">&quot;GPCA&quot;</span>, <span class="st">&quot;COAP&quot;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>datlist <span class="ot">&lt;-</span> <span class="fu">gendata_cmgfm</span>(<span class="at">pveclist =</span> pveclist, <span class="at">seed =</span> <span class="dv">1</span>, <span class="at">n =</span> <span class="dv">300</span>,<span class="at">d =</span> <span class="dv">3</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>                           <span class="at">q =</span> q, <span class="at">rho =</span> <span class="fu">rep</span>(<span class="dv">1</span>,<span class="fu">length</span>(pveclist)), <span class="at">rho_z=</span><span class="fl">0.2</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>                           <span class="at">sigmavec=</span>sigmavec, <span class="at">sigma_eps=</span><span class="dv">1</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">str</span>(datlist)</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>XList <span class="ot">&lt;-</span> datlist<span class="sc">$</span>XList</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>Z <span class="ot">&lt;-</span> datlist<span class="sc">$</span>Z</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>numvarmat <span class="ot">&lt;-</span> datlist<span class="sc">$</span>numvarmat</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>Uplist <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>k <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="cf">for</span>(id <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(datlist<span class="sc">$</span>Uplist)){</span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>    <span class="cf">for</span>(im <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(datlist<span class="sc">$</span>Uplist[[id]])){</span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>      Uplist[[k]] <span class="ot">&lt;-</span> datlist<span class="sc">$</span>Uplist[[id]][[im]]</span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>      k <span class="ot">&lt;-</span> k <span class="sc">+</span> <span class="dv">1</span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a>    }</span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a>}</span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a>types <span class="ot">&lt;-</span> datlist<span class="sc">$</span>types</span></code></pre></div>
+<p>Fit the CMGFM model using the function <code>CMGFM()</code> in the R
+package <code>CMGFM</code>. Users can use <code>?CMGFM</code> to see the
+details about this function</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">system.time</span>({</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  tic <span class="ot">&lt;-</span> <span class="fu">proc.time</span>()</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  rlist <span class="ot">&lt;-</span> <span class="fu">CMGFM</span>(XList, Z, <span class="at">types=</span>types, <span class="at">q=</span>q, <span class="at">numvarmat=</span>numvarmat)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  toc <span class="ot">&lt;-</span> <span class="fu">proc.time</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  time_smgfm <span class="ot">&lt;-</span> toc[<span class="dv">3</span>] <span class="sc">-</span> tic[<span class="dv">3</span>]</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>})</span></code></pre></div>
+<p>Check the increased property of the evidence lower bound
+function.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>dat_iter <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">iter=</span><span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(rlist<span class="sc">$</span>ELBO_seq), <span class="at">ELBO=</span>rlist<span class="sc">$</span>ELBO_seq)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data=</span>dat_iter, <span class="fu">aes</span>(<span class="at">x=</span>iter, <span class="at">y=</span>ELBO)) <span class="sc">+</span> <span class="fu">geom_line</span>() <span class="sc">+</span> <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">20</span>)</span></code></pre></div>
+<p>We calculate the metrics to measure the estimation accuracy, where
+the trace statistic is used to measure the estimation accuracy of
+loading matrix and prediction accuracy of factor matrix, which is
+evaluated by the function <code>measurefun()</code> in the R package
+<code>GFM</code>, and the root of mean square error is adopted to
+measure the estimation error of bbeta.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">library</span>(GFM)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>hUplist <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="fu">seq_along</span>(rlist<span class="sc">$</span>Bf), <span class="cf">function</span>(m) <span class="fu">cbind</span>(rlist<span class="sc">$</span>muf[[m]], rlist<span class="sc">$</span>Bf[[m]]))</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>metricList <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>metricList<span class="sc">$</span>CMGFM <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>meanTr <span class="ot">&lt;-</span> <span class="cf">function</span>(hBlist, Blist,  <span class="at">type=</span><span class="st">&#39;trace_statistic&#39;</span>){</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="do">###It is noted that the trace statistics is not symmetric, the true value must be in last</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  trvec <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(Blist), <span class="cf">function</span>(j) <span class="fu">measurefun</span>(hBlist[[j]], Blist[[j]], <span class="at">type =</span> type))</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">mean</span>(trvec))</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>normvec <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">sqrt</span>(<span class="fu">sum</span>(x<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span> <span class="fu">length</span>(x)))</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>metricList<span class="sc">$</span>CMGFM<span class="sc">$</span>Tr_F <span class="ot">&lt;-</span> <span class="fu">measurefun</span>(rlist<span class="sc">$</span>M, datlist<span class="sc">$</span>F0)</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>metricList<span class="sc">$</span>CMGFM<span class="sc">$</span>Tr_Upsilon <span class="ot">&lt;-</span> <span class="fu">meanTr</span>(hUplist, Uplist)</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>metricList<span class="sc">$</span>CMGFM<span class="sc">$</span>Tr_U <span class="ot">&lt;-</span> <span class="fu">measurefun</span>(<span class="fu">Reduce</span>(cbind,rlist<span class="sc">$</span>Xif), <span class="fu">Reduce</span>(cbind, datlist<span class="sc">$</span>U0))</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>metricList<span class="sc">$</span>CMGFM<span class="sc">$</span>beta_norm <span class="ot">&lt;-</span> <span class="fu">normvec</span>(<span class="fu">as.vector</span>(<span class="fu">Reduce</span>(cbind,rlist<span class="sc">$</span>betaf)<span class="sc">-</span> <span class="fu">Reduce</span>(cbind,datlist<span class="sc">$</span>beta0List)))</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>metricList<span class="sc">$</span>CMGFM<span class="sc">$</span>Time <span class="ot">&lt;-</span> rlist<span class="sc">$</span>time_use</span></code></pre></div>
+</div>
+<div id="compare-with-other-methods" class="section level2">
+<h2>Compare with other methods</h2>
+<p>We compare CMGFM with various prominent methods in the literature.
+They are (1) High-dimensional LFM (Bai and Ng 2002) implemented in the R
+package GFM; (2) PoissonPCA (Kenney et al. 2021) implemented in the R
+package PoissonPCA; (3) Zero-inflated Poisson factor model (ZIPFA, Xu et
+al. 2021) implemented in the R package ZIPFA; (4) Generalized factor
+model (Liu et al. 2023) implemented in the R package GFM; (5) PLNPCA
+(Chiquet et al. 2018) implemented in the R package PLNmodels; (6)
+Generalized Linear Latent Variable Models (GLLVM, Hui et al. 2017)
+implemented in the R package gllvm. (7) Poisson regression model for
+each <span class="math inline">\(x_{ij}, (j = 1,··· ,p)\)</span>,
+implemented in stats R package; (8) Multi-response reduced-rank Poisson
+regression model (MMMR, Luo et al. 2018) implemented in rrpack R
+package.</p>
+<p>(1). First, we implemented the generalized factor model (LFM) and
+record the metrics that measure the estimation accuracy and
+computational cost.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>metricList<span class="sc">$</span>GFM <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>tic <span class="ot">&lt;-</span> <span class="fu">proc.time</span>()</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>res_gfm <span class="ot">&lt;-</span> <span class="fu">gfm</span>(XList, <span class="at">types=</span>types, <span class="at">q=</span>q)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>toc <span class="ot">&lt;-</span> <span class="fu">proc.time</span>()</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>time_gfm <span class="ot">&lt;-</span> toc[<span class="dv">3</span>] <span class="sc">-</span> tic[<span class="dv">3</span>]</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>mat2list <span class="ot">&lt;-</span> <span class="cf">function</span>(B, pvec, <span class="at">by_row=</span><span class="cn">TRUE</span>){</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  Blist <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  pcum <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">cumsum</span>(pvec))</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(pvec)){</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>    <span class="cf">if</span>(by_row){</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>      Blist[[i]] <span class="ot">&lt;-</span> B[(pcum[i]<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>pcum[i<span class="sc">+</span><span class="dv">1</span>],]</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>    }<span class="cf">else</span>{</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>      Blist[[i]] <span class="ot">&lt;-</span> B[, (pcum[i]<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>pcum[i<span class="sc">+</span><span class="dv">1</span>]]</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>    }</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  }</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>  <span class="fu">return</span>(Blist)</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>}</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>metricList<span class="sc">$</span>GFM<span class="sc">$</span>Tr_F <span class="ot">&lt;-</span> <span class="fu">measurefun</span>(res_gfm<span class="sc">$</span>hH, datlist<span class="sc">$</span>F0)</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>metricList<span class="sc">$</span>GFM<span class="sc">$</span>Tr_Upsilon <span class="ot">&lt;-</span> <span class="fu">meanTr</span>(<span class="fu">mat2list</span>(<span class="fu">cbind</span>(res_gfm<span class="sc">$</span>hmu,res_gfm<span class="sc">$</span>hB), pvec), Uplist)</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>metricList<span class="sc">$</span>GFM<span class="sc">$</span>Tr_U <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>metricList<span class="sc">$</span>GFM<span class="sc">$</span>beta_norm <span class="ot">&lt;-</span> <span class="cn">NA</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>metricList<span class="sc">$</span>GFM<span class="sc">$</span>Time <span class="ot">&lt;-</span> time_gfm</span></code></pre></div>
+<ol start="2" style="list-style-type: decimal">
+<li>Eightly, we implemented the first version of multi-response
+reduced-rank Poisson regression model (MMMR, Luo et al. 2018)
+implemented in rrpack R package (MRRR-Z), that did not consider the
+latent factor structure but only the covariates.</li>
+</ol>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>mrrr_run <span class="ot">&lt;-</span> <span class="cf">function</span>(Y, Z, numvarmat, rank0,<span class="at">family=</span><span class="fu">list</span>(<span class="fu">poisson</span>()),</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>                     familygroup,  <span class="at">epsilon =</span> <span class="fl">1e-4</span>, <span class="at">sv.tol =</span> <span class="fl">1e-2</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                     <span class="at">lambdaSVD=</span><span class="fl">0.1</span>, <span class="at">maxIter =</span> <span class="dv">2000</span>, <span class="at">trace=</span><span class="cn">TRUE</span>, <span class="at">trunc=</span><span class="dv">500</span>){</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="co"># epsilon = 1e-4; sv.tol = 1e-2; maxIter = 30; trace=TRUE,lambdaSVD=0.1</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  Diag <span class="ot">&lt;-</span> <span class="cf">function</span>(vec){</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  q <span class="ot">&lt;-</span> <span class="fu">length</span>(vec)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="cf">if</span>(q <span class="sc">&gt;</span> <span class="dv">1</span>){</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">diag</span>(vec)</span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>  }<span class="cf">else</span>{</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a>    y <span class="ot">&lt;-</span> <span class="fu">matrix</span>(vec, <span class="dv">1</span>,<span class="dv">1</span>)</span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a>  }</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a>  <span class="fu">return</span>(y)</span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a>}</span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a>  <span class="fu">require</span>(rrpack)</span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a>  q <span class="ot">&lt;-</span> rank0</span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">nrow</span>(Y); p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(Y)</span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="fu">cbind</span>(<span class="dv">1</span>, Z),  <span class="fu">diag</span>(n))</span>
+<span id="cb7-18"><a href="#cb7-18" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">ncol</span>(Z)</span>
+<span id="cb7-19"><a href="#cb7-19" tabindex="-1"></a>  <span class="do">## Trunction</span></span>
+<span id="cb7-20"><a href="#cb7-20" tabindex="-1"></a>  Y[Y<span class="sc">&gt;</span>trunc] <span class="ot">&lt;-</span> trunc</span>
+<span id="cb7-21"><a href="#cb7-21" tabindex="-1"></a>  Y[Y<span class="sc">&lt;</span> <span class="sc">-</span>trunc] <span class="ot">&lt;-</span> <span class="sc">-</span>trunc</span>
+<span id="cb7-22"><a href="#cb7-22" tabindex="-1"></a>  </span>
+<span id="cb7-23"><a href="#cb7-23" tabindex="-1"></a>  tic <span class="ot">&lt;-</span> <span class="fu">proc.time</span>()</span>
+<span id="cb7-24"><a href="#cb7-24" tabindex="-1"></a>  pvec <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(<span class="fu">t</span>(numvarmat))</span>
+<span id="cb7-25"><a href="#cb7-25" tabindex="-1"></a>  pvec <span class="ot">&lt;-</span> pvec[pvec<span class="sc">&gt;</span><span class="dv">0</span>]</span>
+<span id="cb7-26"><a href="#cb7-26" tabindex="-1"></a>  pcums <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(pvec)</span>
+<span id="cb7-27"><a href="#cb7-27" tabindex="-1"></a>  idxlist <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb7-28"><a href="#cb7-28" tabindex="-1"></a>  idxlist[[<span class="dv">1</span>]] <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>pcums[<span class="dv">1</span>]</span>
+<span id="cb7-29"><a href="#cb7-29" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(pvec)<span class="sc">&gt;</span><span class="dv">1</span>){</span>
+<span id="cb7-30"><a href="#cb7-30" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">length</span>(pvec)){</span>
+<span id="cb7-31"><a href="#cb7-31" tabindex="-1"></a>      idxlist[[i]] <span class="ot">&lt;-</span> (pcums[i<span class="dv">-1</span>]<span class="sc">+</span><span class="dv">1</span>)<span class="sc">:</span>pcums[i] </span>
+<span id="cb7-32"><a href="#cb7-32" tabindex="-1"></a>    }</span>
+<span id="cb7-33"><a href="#cb7-33" tabindex="-1"></a>  }</span>
+<span id="cb7-34"><a href="#cb7-34" tabindex="-1"></a>  </span>
+<span id="cb7-35"><a href="#cb7-35" tabindex="-1"></a>  svdX0d1 <span class="ot">&lt;-</span> <span class="fu">svd</span>(X)<span class="sc">$</span>d[<span class="dv">1</span>]</span>
+<span id="cb7-36"><a href="#cb7-36" tabindex="-1"></a>  init1 <span class="ot">=</span> <span class="fu">list</span>(<span class="at">kappaC0 =</span> svdX0d1 <span class="sc">*</span> <span class="dv">5</span>)</span>
+<span id="cb7-37"><a href="#cb7-37" tabindex="-1"></a>  offset <span class="ot">=</span> <span class="cn">NULL</span></span>
+<span id="cb7-38"><a href="#cb7-38" tabindex="-1"></a>  control <span class="ot">=</span> <span class="fu">list</span>(<span class="at">epsilon =</span> epsilon, <span class="at">sv.tol =</span> sv.tol, <span class="at">maxit =</span> maxIter,</span>
+<span id="cb7-39"><a href="#cb7-39" tabindex="-1"></a>                 <span class="at">trace =</span> trace, <span class="at">gammaC0 =</span> <span class="fl">1.1</span>, <span class="at">plot.cv =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb7-40"><a href="#cb7-40" tabindex="-1"></a>                 <span class="at">conv.obj =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-41"><a href="#cb7-41" tabindex="-1"></a>  res_mrrr <span class="ot">&lt;-</span> <span class="fu">mrrr</span>(<span class="at">Y=</span>Y, <span class="at">X=</span>X[,<span class="sc">-</span><span class="dv">1</span>], <span class="at">family =</span> family, <span class="at">familygroup =</span> familygroup,</span>
+<span id="cb7-42"><a href="#cb7-42" tabindex="-1"></a>                   <span class="at">penstr =</span> <span class="fu">list</span>(<span class="at">penaltySVD =</span> <span class="st">&quot;rankCon&quot;</span>, <span class="at">lambdaSVD =</span> lambdaSVD),</span>
+<span id="cb7-43"><a href="#cb7-43" tabindex="-1"></a>                   <span class="at">control =</span> control, <span class="at">init =</span> init1, <span class="at">maxrank =</span> rank0<span class="sc">+</span>d) <span class="co">#</span></span>
+<span id="cb7-44"><a href="#cb7-44" tabindex="-1"></a>  </span>
+<span id="cb7-45"><a href="#cb7-45" tabindex="-1"></a>  hmu <span class="ot">&lt;-</span> res_mrrr<span class="sc">$</span>coef[<span class="dv">1</span>,]</span>
+<span id="cb7-46"><a href="#cb7-46" tabindex="-1"></a>  hbeta <span class="ot">&lt;-</span> <span class="fu">t</span>(res_mrrr<span class="sc">$</span>coef[<span class="dv">2</span><span class="sc">:</span>(d<span class="sc">+</span><span class="dv">1</span>),])</span>
+<span id="cb7-47"><a href="#cb7-47" tabindex="-1"></a>  hTheta <span class="ot">&lt;-</span> res_mrrr<span class="sc">$</span>coef[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span>(d<span class="sc">+</span><span class="dv">1</span>)),]</span>
+<span id="cb7-48"><a href="#cb7-48" tabindex="-1"></a>  </span>
+<span id="cb7-49"><a href="#cb7-49" tabindex="-1"></a>  hbeta_rf <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb7-50"><a href="#cb7-50" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="fu">seq_along</span>(pvec)){</span>
+<span id="cb7-51"><a href="#cb7-51" tabindex="-1"></a>    hbeta_rf <span class="ot">&lt;-</span> <span class="fu">cbind</span>(hbeta_rf, <span class="fu">colMeans</span>(hbeta[idxlist[[i]],]))</span>
+<span id="cb7-52"><a href="#cb7-52" tabindex="-1"></a>  }</span>
+<span id="cb7-53"><a href="#cb7-53" tabindex="-1"></a>  </span>
+<span id="cb7-54"><a href="#cb7-54" tabindex="-1"></a>  <span class="co"># Matrix::rankMatrix(hTheta)</span></span>
+<span id="cb7-55"><a href="#cb7-55" tabindex="-1"></a>  svd_Theta <span class="ot">&lt;-</span> <span class="fu">svd</span>(hTheta, <span class="at">nu=</span>q, <span class="at">nv=</span>q)</span>
+<span id="cb7-56"><a href="#cb7-56" tabindex="-1"></a>  hH <span class="ot">&lt;-</span> svd_Theta<span class="sc">$</span>u</span>
+<span id="cb7-57"><a href="#cb7-57" tabindex="-1"></a>  hB <span class="ot">&lt;-</span> svd_Theta<span class="sc">$</span>v <span class="sc">%*%</span> <span class="fu">Diag</span>(svd_Theta<span class="sc">$</span>d[<span class="dv">1</span><span class="sc">:</span>q])</span>
+<span id="cb7-58"><a href="#cb7-58" tabindex="-1"></a>  toc <span class="ot">&lt;-</span> <span class="fu">proc.time</span>()</span>
+<span id="cb7-59"><a href="#cb7-59" tabindex="-1"></a>  time_mrrr <span class="ot">&lt;-</span> toc[<span class="dv">3</span>] <span class="sc">-</span> tic[<span class="dv">3</span>]</span>
+<span id="cb7-60"><a href="#cb7-60" tabindex="-1"></a>  </span>
+<span id="cb7-61"><a href="#cb7-61" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">list</span>(<span class="at">hH=</span>hH, <span class="at">hB=</span>hB, <span class="at">hmu=</span> hmu, <span class="at">beta=</span>hbeta_rf, <span class="at">time_use=</span>time_mrrr))</span>
+<span id="cb7-62"><a href="#cb7-62" tabindex="-1"></a>}</span>
+<span id="cb7-63"><a href="#cb7-63" tabindex="-1"></a></span>
+<span id="cb7-64"><a href="#cb7-64" tabindex="-1"></a>family_use <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="fu">gaussian</span>(), <span class="fu">poisson</span>(), <span class="fu">binomial</span>())</span>
+<span id="cb7-65"><a href="#cb7-65" tabindex="-1"></a>familygroup <span class="ot">&lt;-</span> <span class="fu">sapply</span>(<span class="fu">seq_along</span>(datlist<span class="sc">$</span>XList), <span class="cf">function</span>(j) <span class="fu">rep</span>(j, <span class="fu">ncol</span>(datlist<span class="sc">$</span>XList[[j]])))</span>
+<span id="cb7-66"><a href="#cb7-66" tabindex="-1"></a>res_mrrr <span class="ot">&lt;-</span> <span class="fu">mrrr_run</span>(<span class="fu">Reduce</span>(cbind, datlist<span class="sc">$</span>XList),  <span class="at">Z =</span> Z, numvarmat, <span class="at">rank0=</span>q, <span class="at">family=</span>family_use,</span>
+<span id="cb7-67"><a href="#cb7-67" tabindex="-1"></a>                       <span class="at">familygroup =</span> <span class="fu">unlist</span>(familygroup), <span class="at">maxIter=</span><span class="dv">100</span>) <span class="co">#</span></span>
+<span id="cb7-68"><a href="#cb7-68" tabindex="-1"></a>  </span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>metricList<span class="sc">$</span>MRRR <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>metricList<span class="sc">$</span>MRRR<span class="sc">$</span>Tr_F <span class="ot">&lt;-</span> <span class="fu">measurefun</span>(res_mrrr<span class="sc">$</span>hH, datlist<span class="sc">$</span>F0)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>metricList<span class="sc">$</span>MRRR<span class="sc">$</span>Tr_Upsilon <span class="ot">&lt;-</span><span class="fu">meanTr</span>(<span class="fu">mat2list</span>(<span class="fu">cbind</span>(res_mrrr<span class="sc">$</span>hmu,res_mrrr<span class="sc">$</span>hB), pvec), Uplist)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>metricList<span class="sc">$</span>MRRR<span class="sc">$</span>Tr_U <span class="ot">&lt;-</span><span class="cn">NA</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>metricList<span class="sc">$</span>MRRR<span class="sc">$</span>beta_norm <span class="ot">&lt;-</span> <span class="fu">normvec</span>(<span class="fu">as.vector</span>(res_mrrr<span class="sc">$</span>beta<span class="sc">-</span> <span class="fu">Reduce</span>(cbind,datlist<span class="sc">$</span>beta0List)))</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>metricList<span class="sc">$</span>MRRR<span class="sc">$</span>Time <span class="ot">&lt;-</span> res_mrrr<span class="sc">$</span>time_use</span></code></pre></div>
+</div>
+<div id="visualize-the-comparison-of-performance" class="section level2">
+<h2>Visualize the comparison of performance</h2>
+<p>Next, we summarized the metrics for COAP and other compared methods
+in a dataframe object.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>list2vec <span class="ot">&lt;-</span> <span class="cf">function</span>(xlist){</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  nn <span class="ot">&lt;-</span> <span class="fu">length</span>(xlist)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  me <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="cn">NA</span>, nn)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  idx_noNA <span class="ot">&lt;-</span> <span class="fu">which</span>(<span class="fu">sapply</span>(xlist, <span class="cf">function</span>(x) <span class="sc">!</span><span class="fu">is.null</span>(x)))</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="cf">for</span>(r <span class="cf">in</span> idx_noNA) me[r] <span class="ot">&lt;-</span> xlist[[r]]</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>  <span class="fu">return</span>(me)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>}</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>dat_metric <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">Tr_F =</span> <span class="fu">sapply</span>(metricList, <span class="cf">function</span>(x) x<span class="sc">$</span>Tr_F), </span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>                         <span class="at">Tr_Upsilon =</span> <span class="fu">sapply</span>(metricList, <span class="cf">function</span>(x) x<span class="sc">$</span>Tr_Upsilon),</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>                         <span class="at">Tr_U =</span> <span class="fu">sapply</span>(metricList, <span class="cf">function</span>(x) x<span class="sc">$</span>Tr_U),</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>                         <span class="at">beta_norm =</span><span class="fu">sapply</span>(metricList, <span class="cf">function</span>(x) x<span class="sc">$</span>beta_norm),</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>                         <span class="at">Time =</span> <span class="fu">sapply</span>(metricList, <span class="cf">function</span>(x) x<span class="sc">$</span>Time),</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>                         <span class="at">Method =</span> <span class="fu">names</span>(metricList))</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>dat_metric</span></code></pre></div>
+<p>Plot the results for COAP and other methods, which suggests that
+CMGFM achieves better estimation accuracy for the quantities of
+interest.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span><span class="fu">subset</span>(dat_metric, <span class="sc">!</span><span class="fu">is.na</span>(Tr_F)), <span class="fu">aes</span>(<span class="at">x=</span> Method, <span class="at">y=</span>Tr_F, <span class="at">fill=</span>Method)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">scale_x_discrete</span>(<span class="at">breaks=</span><span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">16</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span><span class="fu">subset</span>(dat_metric, <span class="sc">!</span><span class="fu">is.na</span>(Tr_Upsilon)), <span class="fu">aes</span>(<span class="at">x=</span> Method, <span class="at">y=</span>Tr_Upsilon, <span class="at">fill=</span>Method)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">scale_x_discrete</span>(<span class="at">breaks=</span><span class="cn">NULL</span>)<span class="sc">+</span> <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">16</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span><span class="fu">subset</span>(dat_metric, <span class="sc">!</span><span class="fu">is.na</span>(beta_norm)), <span class="fu">aes</span>(<span class="at">x=</span> Method, <span class="at">y=</span>beta_norm, <span class="at">fill=</span>Method)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">scale_x_discrete</span>(<span class="at">breaks=</span><span class="cn">NULL</span>)<span class="sc">+</span> <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">16</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data=</span><span class="fu">subset</span>(dat_metric, <span class="sc">!</span><span class="fu">is.na</span>(Time)), <span class="fu">aes</span>(<span class="at">x=</span> Method, <span class="at">y=</span>Time, <span class="at">fill=</span>Method)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat=</span><span class="st">&quot;identity&quot;</span>) <span class="sc">+</span> <span class="fu">xlab</span>(<span class="cn">NULL</span>) <span class="sc">+</span> <span class="fu">scale_x_discrete</span>(<span class="at">breaks=</span><span class="cn">NULL</span>)<span class="sc">+</span> <span class="fu">theme_bw</span>(<span class="at">base_size =</span> <span class="dv">16</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="fu">plot_grid</span>(p1,p2,p3, p4, <span class="at">nrow=</span><span class="dv">2</span>, <span class="at">ncol=</span><span class="dv">2</span>)</span></code></pre></div>
+</div>
+<div id="select-the-parameters" class="section level2">
+<h2>Select the parameters</h2>
+<p>We applied the maximum singular value ratio based method to select
+the number of factors. The results showed that the maximum SVR method
+has the potential to identify the true values.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>hq <span class="ot">&lt;-</span> <span class="fu">MSVR</span>(XList, Z, <span class="at">types=</span>types, numvarmat, <span class="at">q_max=</span><span class="dv">20</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">c</span>(<span class="at">q_true=</span>q, <span class="at">q_est=</span>hq))</span></code></pre></div>
+<details>
+<summary>
+<strong>Session Info</strong>
+</summary>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; R version 4.4.0 (2024-04-24 ucrt)</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; Running under: Windows 11 x64 (build 22631)</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; Matrix products: default</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; locale:</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; [1] LC_COLLATE=C                               </span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; [2] LC_CTYPE=Chinese (Simplified)_China.utf8   </span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a><span class="co">#&gt; [3] LC_MONETARY=Chinese (Simplified)_China.utf8</span></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="co">#&gt; [4] LC_NUMERIC=C                               </span></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="co">#&gt; [5] LC_TIME=Chinese (Simplified)_China.utf8    </span></span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; time zone: Asia/Shanghai</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt; tzcode source: internal</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt; attached base packages:</span></span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
+<span id="cb12-23"><a href="#cb12-23" tabindex="-1"></a><span class="co">#&gt;  [1] digest_0.6.35     R6_2.5.1          fastmap_1.1.1     xfun_0.43        </span></span>
+<span id="cb12-24"><a href="#cb12-24" tabindex="-1"></a><span class="co">#&gt;  [5] cachem_1.0.8      knitr_1.46        htmltools_0.5.8.1 rmarkdown_2.26   </span></span>
+<span id="cb12-25"><a href="#cb12-25" tabindex="-1"></a><span class="co">#&gt;  [9] lifecycle_1.0.4   cli_3.6.2         sass_0.4.9        jquerylib_0.1.4  </span></span>
+<span id="cb12-26"><a href="#cb12-26" tabindex="-1"></a><span class="co">#&gt; [13] compiler_4.4.0    rstudioapi_0.16.0 tools_4.4.0       evaluate_0.23    </span></span>
+<span id="cb12-27"><a href="#cb12-27" tabindex="-1"></a><span class="co">#&gt; [17] bslib_0.7.0       yaml_2.3.8        rlang_1.1.3       jsonlite_1.8.8</span></span></code></pre></div>
+</details>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
